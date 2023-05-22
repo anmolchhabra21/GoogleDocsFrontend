@@ -109,11 +109,9 @@ const Editor = () => {
 
     const interval = setInterval(() => {
         socket && socket.emit('save-document', quill.getContents(),name)
-        // console.log("new name", name, quill.getContents());
     }, 2000);
 
     socket && socket.emit('anmol', name);
-    console.log("this is running")
 
     return ()=>{
         clearInterval(interval);
