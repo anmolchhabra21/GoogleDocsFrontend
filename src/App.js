@@ -1,23 +1,19 @@
-import logo from './logo.svg';
-import './App.css';
+import Editor from './components/Editor';
+import './App.css'
+import {v4 as uuid} from 'uuid'
+import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom'
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <>
+        <Router>
+          <Routes>
+            <Route path='/' element={<Navigate replace to={`/docs/${uuid()}`}/>}></Route>
+            <Route path='/docs/:id' element={<Editor/>}></Route>
+          </Routes>
+        </Router>
+      </>
     </div>
   );
 }
