@@ -53,9 +53,7 @@ const Editor = () => {
     quillserver.disable();
     quillserver.setText("Loading Document...");
     setQuill(quillserver);
-  }, []);
 
-  useEffect(() => {
     const socketServer = io("http://localhost:9000");
     setSocket(socketServer);
     return () => {
@@ -63,33 +61,31 @@ const Editor = () => {
     };
   }, []);
 
+  const handleSChange = (delta, oldData, source) => {
+    if (source !== "user") return;
+    console.log("send", delta);
+    socket && socket.emit("send-changes", delta);
+  };
+
+  const handleCChange = (delta) => {
+    console.log("delta", delta)
+    // delta = JSON.parse(delta);
+    quill.updateContents(delta);
+  };
+
   useEffect(() => {
+    console.log("useEffect");
     if (socket == null || quill == null) {
       return;
     }
-    const handleChange = (delta, oldData, source) => {
-      if (source !== "user") return;
-      socket && socket.emit("send-changes", delta);
-    };
+    
+    quill && quill.on("text-change", handleSChange);
+    socket && socket.on("receive-changes", handleCChange);
 
-    quill && quill.on("text-change", handleChange);
-    return () => {
-      quill && quill.off("text-change", handleChange);
-    };
-  }, [quill, socket]);
-
-  useEffect(() => {
-    if (socket == null || quill == null) {
-      return;
+    return ()=>{
+      quill && quill.off("text-change", handleSChange);
+      socket && socket.off("receive-changes", handleCChange);
     }
-    const handleChange = (delta) => {
-      quill.updateContents(delta);
-    };
-
-    socket && socket.on("receive-changes", handleChange);
-    return () => {
-      socket && socket.off("handle-changes");
-    };
   }, [quill, socket]);
 
   useEffect(() => {
@@ -97,26 +93,26 @@ const Editor = () => {
 
     socket &&
       socket.once("load-document", (document) => {
+        console.log("enabled", document);
         quill && quill.setContents(document);
         quill && quill.enable();
       });
-
-    socket && socket.emit("get-document", id);
+      socket && socket.emit("get-document", id);
   }, [quill, socket, id]);
 
-  useEffect(()=>{
-    if(socket === null || quill===null) return;
+  // useEffect(()=>{
+  //   if(socket === null || quill===null) return;
 
-    const interval = setInterval(() => {
-        socket && socket.emit('save-document', quill.getContents(),name)
-    }, 2000);
+  //   const interval = setInterval(() => {
+  //       socket && socket.emit('save-document', quill.getContents(),name)
+  //   }, 20000);
 
-    socket && socket.emit('anmol', name);
+  //   socket && socket.emit('anmol', name);
 
-    return ()=>{
-        clearInterval(interval);
-    }
-  },[socket, quill, name]);
+  //   return ()=>{
+  //       clearInterval(interval);
+  //   }
+  // },[socket, quill, name]);
 
   return (
     <Component>
